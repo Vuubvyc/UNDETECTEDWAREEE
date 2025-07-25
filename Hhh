@@ -15,10 +15,8 @@ local Aiming = {
     Players = true,
     Enabled = true,
     ShowFOV = true,
-    AimTracer = true,
     DynamicFOV = true,
     FOVColor = Color3.fromRGB(255, 255, 255),
-    AimTracerColor = Color3.fromRGB(255, 0, 0),
     CurrentTarget = nil
 }
 
@@ -30,9 +28,6 @@ FOVCircle.Transparency = 1
 FOVCircle.Thickness = 2
 FOVCircle.Color = Aiming.FOVColor
 FOVCircle.Filled = false
-
-local FOVTracer = Drawing.new("Line")
-FOVTracer.Thickness = 2
 
 -- Get screen center (for mobile)
 local function GetScreenCenter()
@@ -120,35 +115,23 @@ local function GetClosestPlayer()
     local PlayersInFOV = GetPlayersInFOV()
     local ClosestPlayer = nil
     local ClosestDistance = math.huge
-    local ClosestPosition = nil
 
     for _, Player in next, PlayersInFOV do
         if Player.Distance < ClosestDistance then
             ClosestPlayer = Player.Character
-            ClosestPosition = Player.Position
             ClosestDistance = Player.Distance
         end
     end
 
-    return ClosestPlayer, ClosestDistance, ClosestPosition
+    return ClosestPlayer
 end
 
 local Connection = RunService.RenderStepped:Connect(function()
     if Aiming.Enabled then
         UpdateFOV()
-        local ClosestPlayer, Distance, Position = GetClosestPlayer()
-        Aiming.CurrentTarget = ClosestPlayer
-        if ClosestPlayer then
-            FOVTracer.Visible = Aiming.AimTracer
-            FOVTracer.From = GetScreenCenter()
-            FOVTracer.To = Position
-            FOVTracer.Color = Aiming.AimTracerColor
-        else
-            FOVTracer.Visible = false
-        end
+        Aiming.CurrentTarget = GetClosestPlayer()
     else
         FOVCircle.Visible = false
-        FOVTracer.Visible = false
         Aiming.CurrentTarget = nil
     end
 end)
@@ -156,7 +139,6 @@ end)
 local function Unload()
     Connection:Disconnect()
     FOVCircle:Remove()
-    FOVTracer:Remove()
 end
 
 Aiming.Unload = Unload
